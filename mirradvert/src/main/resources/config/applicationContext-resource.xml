@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+		    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+		    http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd 
+		    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+		    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd  ">
+	
+	<!-- 启动spring的注解功能 -->
+	<context:annotation-config />
+	<!--激活spring的自动扫描功能 -->
+	<context:component-scan base-package="com.mirrtalk" />
+
+	<!-- 指定数据库属性文件 -->
+    <context:property-placeholder location="classpath:system_DEVL.properties"/>
+    <!-- 定义数据源Bean，使用c3p0数据源实现 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <!-- 指定连接数据库的驱动 -->
+        <property name="driverClass" value="${driverClass}" />
+	    <!-- 指定连接数据库的URL -->
+	    <property name="jdbcUrl" value="${jdbcUrl}" />
+	    <!-- 自定连接数据库的用户名 -->
+	    <property name="user" value="${username}" />
+	    <!-- 指定连接数据库的密码 -->
+	    <property name="password" value="${password}" />
+	    <!-- 指定连接数据库连接池的初始化连接数 -->
+	    <property name="initialPoolSize" value="1"/>
+	    <!-- 指定连接数据库连接池的最大连接数 -->
+	    <property name="maxPoolSize" value="40"/>
+	    <!-- 指定连接数据库连接池的最小连接数 -->
+	    <property name="minPoolSize" value="1"/>
+	    <!-- 指定连接数据库连接池的连接的最大空闲时间 -->
+	    <property name="maxIdleTime" value="20"/>
+	</bean>
+	
+	<!-- 定义实体管理器工厂 -->
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="persistenceUnitName" value="myJPA"/>
+	</bean>
+	
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+	
+	<!-- 启用 annotation事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 配置Spring Data JPA扫描目录 -->
+	<jpa:repositories base-package="com.mirrtalk.*.repository"  
+	     repository-impl-postfix="Impl"
+         entity-manager-factory-ref="entityManagerFactory"
+         transaction-manager-ref="transactionManager" />
+</beans>
